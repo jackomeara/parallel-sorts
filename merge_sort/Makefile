@@ -19,15 +19,15 @@ CFLAGSMPE = $(CFLAGS) -I$(MPE_DIR)/include
 CCFLAGS	  = $(CFLAGS)
 #FFLAGS	  = '-qdpc=e' 
 FFLAGS	  = $(OPTFLAGS)
-EXECS	  = mpisort # BINARY NAME HERE
+EXECS	  = sorting # BINARY NAME HERE
 ALL_EXECS = ${EXECS} 
 
-all: mpisort  # add the target here
+all: sorting  # add the target here
 
 default: $(EXECS)
 
-mpisort: mpisort.o
-	$(CLINKER) $(OPTFLAGS) -o mpisort mpisort.o -lm
+sorting: sorting.o
+	$(CLINKER) $(OPTFLAGS) -o sorting sorting.o -lm
 
 clean:
 	/bin/rm -f *.o *~ PI* $(ALL_EXECS) upshot rdb.* startup.* core
