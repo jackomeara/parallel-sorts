@@ -1,3 +1,4 @@
 # ignore output files
 mpisort
-*.o
+mpisort.o
+sorting

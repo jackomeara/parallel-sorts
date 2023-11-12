@@ -34,20 +34,41 @@ int main(int argc, char * argv[]) {
 
     MPI_Sort_bucket(n, array, m, 0, MPI_COMM_WORLD, &compT, &commT);
 
+    printf("Rank %d: Comm.T: %lfs, Comp.T: %lfs\n", rank, commT, compT);
+
     MPI_Finalize();
 }
 
 int MPI_Sort_bucket(int n, double * array, double max, int root, MPI_Comm comm, double * compTime, double * commTime) {
     int rank, size;
+    double commT, compT, time = 0;
+
+    commT = (*commTime);
+    compT = (*compTime);
+
+    time = MPI_Wtime();
     
     MPI_Comm_rank(comm, &rank);
     MPI_Comm_size(comm, &size);
+    
+    time = MPI_Wtime() - time;
+    commT += time;
+    time = MPI_Wtime();
 
     double * localBucket = (double *)calloc(n, sizeof(double));
+
+    time = MPI_Wtime() - time;
+    compT += time;
+    time = MPI_Wtime();
+
 
     // bcast array
     int rc = MPI_Bcast(array, n, MPI_DOUBLE, root, comm);
     if(rc!=MPI_SUCCESS) return rc;
+
+    time = MPI_Wtime() - time;
+    commT += time;
+    time = MPI_Wtime();
 
     int count = 0;
     for(int i=0;i<n;i++) {
@@ -59,18 +80,39 @@ int MPI_Sort_bucket(int n, double * array, double max, int root, MPI_Comm comm, 
     merge_sort(count, localBucket);
     int * counts = (int *)calloc(size, sizeof(int));
     int * displacements = (int *)calloc(size, sizeof(int));
+
+    time = MPI_Wtime() - time;
+    compT += time;
+    time = MPI_Wtime();
+
     MPI_Gather(&count, 1, MPI_INT, counts, 1, MPI_INT, root, comm);
-    
+
+    time = MPI_Wtime() - time;
+    commT += time;
+    time = MPI_Wtime();
+
+
     if(rank == root){    
         displacements[0] = 0;
         for(int i=1;i<size;i++){
             displacements[i] = displacements[i-1]+counts[i];
             }
     }
+
+    time = MPI_Wtime() - time;
+    compT += time;
+    time = MPI_Wtime();
     
     rc = MPI_Gatherv(localBucket, count, MPI_DOUBLE, array, counts, displacements,
     MPI_DOUBLE, root, comm);
     if(rc != MPI_SUCCESS)return rc;
+
+    time = MPI_Wtime() - time;
+    commT += time;
+    time = MPI_Wtime();
+
+    (*compTime) = compT;
+    (*commTime) = commT;
 
     return MPI_SUCCESS;
 }
